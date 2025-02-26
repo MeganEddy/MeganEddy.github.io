@@ -11,6 +11,11 @@
         nav a { margin: 0 15px; text-decoration: none; color: #333; font-weight: bold; }
         section { padding: 20px; max-width: 800px; margin: auto; }
         .repo-list { margin-top: 10px; }
+        .repo-item { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 2px 2px 5px gray; }
+        .repo-item h3 { margin: 0; }
+        .repo-item p { margin: 5px 0; color: #555; }
+        .repo-item a { color: #0073e6; text-decoration: none; }
+        .repo-item a:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -26,13 +31,9 @@
     <section id="about">
         <h2>About Me</h2>
         <p>Hi there! Welcome to my personal portfolio. Thank you for being here.</p>
-        
         <p>In my previous life, I was a laboratory microbiologist working in a food safety lab. I found myself tiring of the lab but still wanting to employ the scientific method in my work life. What better way to expand my world while still researching than learning data science?</p>
-        
         <p>I am naturally curious and adventurous. I enjoy traveling to new places and meeting new people. When I'm at home, I enjoy spending time with my animals. An obese, ancient kitty, a ferocious (scaredy-cat) bearded dragon, and the residents of my 55-gallon aquarium.</p>
-        
         <p>I also enjoy reading and am all about that fantasy and sci-fi. One of my greatest accomplishments to date has been finishing the Wheel of Time series, a years-long endeavor.</p>
-        
         <p>In the data science realm, my ultimate goal is to work in the sustainability and/or ecology sector.</p>
     </section>
     <section id="projects">
@@ -44,11 +45,9 @@
         <p><strong>Bellevue University</strong><br>
         Master of Science - MS, Data Science<br>
         Aug 2022 - Mar 2025</p>
-        
         <p><strong>The University of Kansas</strong><br>
         Bachelor of Arts - BA, Spanish Language and Literature<br>
         Aug 2007 - Dec 2013</p>
-        
         <p><strong>The University of Kansas</strong><br>
         Bachelor of Science - BS, Organismal Biology<br>
         Aug 2007 - May 2012</p>
@@ -59,17 +58,48 @@
         <p>GitHub: <a href="https://github.com/MeganEddy" target="_blank">MeganEddy</a></p>
         <p>LinkedIn: <a href="https://www.linkedin.com/in/megan-eddy-82553253/" target="_blank">Megan Eddy</a></p>
     </section>
+
     <script>
-        // Fetch and display GitHub repositories
         async function loadRepos() {
             const username = "MeganEddy";
             const response = await fetch(`https://api.github.com/users/${username}/repos`);
             const repos = await response.json();
+            
+            // Exclude 'MeganEddy.github.io'
+            const filteredRepos = repos.filter(repo => repo.name !== "MeganEddy.github.io");
+
+            // Fetch README for each repo and display it
             const repoList = document.getElementById("repo-list");
-            repoList.innerHTML = repos.map(repo => `<p><a href="${repo.html_url}" target="_blank">${repo.name}</a></p>`).join('');
+            repoList.innerHTML = "";
+
+            for (const repo of filteredRepos) {
+                const readmeResponse = await fetch(`https://api.github.com/repos/${username}/${repo.name}/readme`);
+                
+                let readmeText = "No description available.";
+                let readmeURL = `https://github.com/${username}/${repo.name}#readme`;
+
+                if (readmeResponse.ok) {
+                    const readmeData = await readmeResponse.json();
+                    const decodedContent = atob(readmeData.content); // Decode base64 content
+                    
+                    // Extract first 3 lines for a short preview
+                    const readmeLines = decodedContent.split("\n").slice(0, 3).join(" ");
+                    readmeText = readmeLines.length > 0 ? readmeLines : "No description available.";
+                }
+
+                // Create and append project entry
+                const projectHTML = `
+                    <div class="repo-item">
+                        <h3><a href="${repo.html_url}" target="_blank">${repo.name}</a></h3>
+                        <p>${readmeText}...</p>
+                        <p><a href="${readmeURL}" target="_blank">Read More</a></p>
+                    </div>
+                `;
+                repoList.innerHTML += projectHTML;
+            }
         }
+
         loadRepos();
     </script>
 </body>
 </html>
-
