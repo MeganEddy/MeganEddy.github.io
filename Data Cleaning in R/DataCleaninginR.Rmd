@@ -1,0 +1,482 @@
+---
+title: "Highest Paying College Majors"
+author: "Megan Eddy"
+date: "2023-02-12"
+output: pdf_document
+bibliography: Projectbibliography.bib
+link-citations: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## __Introduction__
+
+ Choosing a college major can be a daunting task. Incoming freshman have a wide variety of options to choose from. Advice and post-graduate employment information often varies from source to source. A key question college students may have concerns what their earning potential post-graduation will be with each major offered. It would be useful for information to be available to college students that would help them predict their chances of employment in their field as well as an approximation of the salary they can expect. Which major should college students pursue to increase their earning potential after receiving a bachelor's degree? Data science can provide the analysis of the current data to give this prediction. 
+ 
+### __Problem Statement__
+
+Which college major leads to the highest earning potential after graduating with a bachelor's degree?
+
+
+### __Research questions__
+
+Draft 5-10 Research questions that focus on the problem statement/topic.
+
+1. What are the college majors available?
+
+2. What are the chances of employment after graduating with said major?
+
+3. Do graduates tend to get jobs in fields related to their major?
+
+4. What time frame should be considered?
+
+5. How much does location affect salaries?
+
+6. How does continuing education affect the salaries of graduates from said majors?
+
+7. Do some majors need to be left out? (i.e. pre-med, pre-law)
+
+8. Is there a difference in salary depending on the gender of the graduate?
+
+## __Approach__
+
+
+  Only majors with available data in the selected datasets will be considered. They will be compared to each other using mean salary information. Other predictors will be compared to determine if they could be influencing any differences in pay. Outliers will be identified and handled as is deemed appropriate to maintain the integrity of the results. The data will be further cleaned based on relevance of potential predictors. Employment numbers will also be considered since it does not really matter how much salary a major yields if the graduate cannot find employment in the field. 
+  
+  This will be done using the model recommended in the _Future Machine Learning_ section.
+
+
+  The approach will directly compare various majors to their average earnings. By controlling for other variables, the results should paint a fairly accurate picture of which majors lead to the highest earnings. The scope will be limited by the time frame the data was collected as it is fairly old. It will also be limited to only the majors appearing in these datasets. 
+
+### __Data__
+
+#### Summary of Steps Taken
+
+To address the problem statement, data was taken from a reputable source and investigated to better determine its validity and meaning. It was then trimmed to include information related only to the direct question of which college major yields the highest earning potential. Columns were removed from the original datasets and then they were combined. Several graphs were plotted to give an idea of what the combined data looked like. 
+
+In order to actually analyse the data. The following model is recommended:
+
+I would check the data to ensure it is normally distributed. I would also check homoscedasticity and the independence of errors. Assuming the parameters are met, I would then continue using Pearson's correlation method. I would look at the regression coefficients of each potential predictor of salary available. This would help determine if higher salaries are actually correlated to the major itself and not a third variable. The R2 and Adjusted R2 stats would be looked at to determine how much variation each predictor accounts for. Confidence intervals would also be calculated to help determine whether the model is a good fit. The data would be divided into training and test sets to verify the accuracy of the predictors of salary. This information could then be extrapolated to predict salaries for other majors not included in the dataset.
+
+#### Description ####
+
+  The data was originally obtained by FiveThirtyEight for an article about the earnings of college graduates. It was compiled by them from information gathered in the American Community Survey 2010-2012 Public Use Microdata Series. The purpose of the article was to highlight what specific college majors made, whether there was a discrepency between genders and also gives information on popularity of majors. The data was published on dataworld.com in 2017 but the data itself was gathered from 2010 - 2012.
+
+The number of variables and column explanations in each dataset are as follows:
+(Note: The Class of Data is reported by the authors of the data and does not necessarily translate into the class of data it falls under in R)
+
+
+```{r Import Recent Grads, echo=FALSE}
+library(readxl)
+recentgradsexplanation <- read_excel("recentgradsexplanation.xlsx")
+library(knitr)
+kable(recentgradsexplanation, col.names = c("Column Title", "Column Description", "Class of Data"), caption = "recent-grads: 20 variables")
+
+```
+
+```{r Import Grad Student, echo = FALSE}
+library(readxl)
+gradstudentexplanation <- read_excel("gradstudentdataexplanation.xlsx")
+library(knitr)
+kable(gradstudentexplanation, col.names = c("Column Title", "Column Description", "Class of Data"), caption = "grad-students: 21 variables")
+
+```
+
+```{r Import All Ages, echo = FALSE}
+library(readxl)
+allagesexplanation <- read_excel("allagesexplanation.xlsx")
+library(knitr)
+kable(allagesexplanation, col.names = c("Column Title", "Column Description", "Class of Data"), caption = "all-ages: 10 variables")
+
+```
+
+There do not appear to be any discrepancies or N/A values present in the datasets. In order to combine them column names will likely have to be changed for consistency.
+
+#### Importing the Data
+
+The data is saved in csv format in the same location in my working directory as my project file. I will use read.csv to import the datasets and save them as dataframes. 
+
+```{r Importing all Datasets, echo = FALSE}
+
+recentgrads <- read.csv("recent-grads.csv", header = TRUE)
+
+allages <- read.csv("all-ages.csv", header = TRUE)
+
+gradstudents <- read.csv("grad-students.csv", header = TRUE)
+
+```
+
+#### __Required Packages__
+
+Identify the packages that are needed for your project.
+
+* ggplot2
+
+* dplyr
+
+* readxl
+
+* car
+
+
+#### Data Manipulation & Cleaning
+
+The plan is to summarize the relevant data into one data frame, taking only the variables that inform about the college major chosen, the number of students in the major, the number of graduates from the major, employment information and salary information. This will reduce the data to a more reasonable size. Each data frame will first be cut to represent only the relevant data and then cleaned before finally being combined. 
+
+_Recent Grads_
+
+
+```{r Recent Grads Trim, echo=FALSE, message=FALSE}
+library(magrittr)
+library(dplyr)
+library(knitr)
+
+recentgrads <- recentgrads %>%
+  select(Major, Total, Sample_size, Employed, Unemployed, Unemployment_rate, Median, P25th, P75th, College_jobs, Non_college_jobs)
+
+
+
+recentgrads2 <- recentgrads %>%
+  select(Major, Total, Employed, Unemployed, Unemployment_rate, Median, P25th, P75th)
+
+head(recentgrads)
+head(recentgrads2)
+```
+
+
+```{r Recent Grads Cleaning, include=FALSE}
+str(recentgrads)
+colnames(recentgrads)
+unique(recentgrads$Major)
+
+recentgrads$Total < recentgrads$Sample_size
+
+recentgrads$Unemployment_rate >= 1
+
+recentgrads$P25th < recentgrads$Median
+
+recentgrads$Median < recentgrads$P75th
+
+recentgrads$Employed >= (recentgrads$College_jobs + recentgrads$Non_college_jobs)
+
+
+
+
+```
+There are 173 observations across 11 variables. Data classes are: character, integer and numeric.
+
+The column names all make sense and none are mislabeled so none will be changed at this time. 
+
+None of the character values in either the Major or Major_category columns are misspelled nor erroneous.
+
+The Sample Size was checked against the Total to ensure none of the values exceeded those of the total. They did not
+
+None of the Unemployment rate values exceeded 1, however there is an N/A which indicates the unemployment rate is 0% for that observation
+
+The Median should have a value between the P25th and P75th. The median is less than all P75th values. 
+
+There are 3 instances where the P25th value exceeds or is equal to that of the Median. 
+
+* Value 57: The P25th value and Median value are equal.
+
+* Value 75: The P25th, Median and P75th values are all equal.
+
+* Value 172: The P25th and Median values are equal.
+
+This may mean that the salary range for grads from these majors is not large which could be an indicator of small sample size. 
+
+The number of employed graduates should be equal to or greater than the sum of college jobs and non-college jobs. This holds true for all observations.
+
+
+_Grad Students_
+
+```{r Grad Students Trim, echo = FALSE, message=FALSE}
+library(magrittr)
+library(dplyr)
+
+gradstudents <- gradstudents %>%
+  select(Major, Grad_total, Grad_sample_size, Grad_employed, Grad_unemployed, Grad_unemployment_rate, Grad_median, Grad_P25, Grad_P75)
+
+gradstudents2 <- gradstudents %>%
+  select(Major, Grad_total,Grad_employed, Grad_unemployed, Grad_unemployment_rate, Grad_median, Grad_P25, Grad_P75)
+
+names(gradstudents2) <- c("Major", "Total", "Employed", "Unemployed", "Unemployment_rate", "Median", "P25th", "P75th")
+
+head(gradstudents)
+head(gradstudents2)
+```
+
+
+```{r Grad Students Cleaning, include = FALSE}
+
+str(gradstudents)
+colnames(gradstudents)
+unique(gradstudents$Major)
+
+gradstudents$Grad_total < gradstudents$Grad_sample_size
+
+
+gradstudents$Grad_median < gradstudents$Grad_P25
+gradstudents$Grad_median > gradstudents$Grad_P75
+
+gradstudents$Grad_unemployment_rate > 1
+
+gradstudents$Nongrad_total == (gradstudents$Nongrad_employed + gradstudents$Nongrad_unemployed)
+gradstudents$Nongrad_total > (gradstudents$Nongrad_employed + gradstudents$Nongrad_unemployed)
+
+gradstudents$Nongrad_unemployment_rate > 1
+
+
+```
+There are 173 observations across 9 variables. Data classes are: character, integer and numeric.
+
+The column names all make sense and none are mislabeled so none will be changed at this time. 
+
+None of the character values in either the Major column are misspelled nor erroneous.
+
+The Sample size column was checked against the Total column and did not exceed its value at any observation.
+
+The values for the Grad unemployment rate and Nongrad unemployment rate were all less than 1. 
+
+The Grad median, Grad P25th and Grad P75 values were all as expected such that the median value fell between the P25th and P75th values for all observations. 
+
+The sum of Nongrad employed and Nongrad unemployed does not equate to the value of the Nongrad total. The values in the Nongrad Total column are always higher than the values in the other two columns combined. This indicates that the Nongrad total column is not representative of sample size for the income information provided. 
+
+_all-ages_
+
+```{r All Ages Trim, echo = FALSE, message=FALSE}
+library(magrittr)
+library(dplyr)
+
+allages <- allages %>%
+  select(Major, Total, Employed, Unemployed, Unemployment_rate, Median_Salary, P25th, P75th)
+
+names(allages) <- c("Major", "Total", "Employed", "Unemployed", "Unemployment_rate", "Median", "P25th", "P75th")
+
+head(allages)
+```
+
+
+```{r All Ages Cleaning, include = FALSE}
+str(allages)
+colnames(allages)
+unique(allages$Major)
+
+allages$Total > (allages$Employed + allages$Unemployed)
+
+allages$Unemployment_rate < 1
+
+allages$P25th < allages$Median_Salary
+
+allages$Median_Salary < allages$P75th
+
+
+
+
+```
+
+There are 173 observations across 8 variables. Data classes are: character, integer and numeric.
+
+The column names all make sense and none are mislabeled so none will be changed at this time. 
+
+None of the character values in either the Major column are misspelled nor erroneous.
+
+The Total number of graduates exceeds the sum of Employed and Unemployed graduates which is to be expected. 
+
+The Employment rate is never above 1. 
+
+The Grad median, Grad P25th and Grad P75 values were all as expected such that the median value fell between the P25th and P75th values for all observations. 
+
+#### Slicing & Dicing
+
+I included only columns relevant to the problem statement. To create my graphs, I narrowed the data down further to only include the top 10 observations for each dataset. I also further reduced the columns included in order to combine all three datasets together.
+
+#### Final Data Set
+
+To achieve the Final Data set, columns were renamed in each separate data frame so they matched one another. The datasets were also trimmed further so dataframes were available that only contained the information shared between the three. 
+
+```{r Combining the Datasets, echo = FALSE}
+combined <- rbind(gradstudents2, recentgrads2, allages) %>%
+  arrange(Major)
+
+head(combined)
+
+```
+
+
+#### Questions for Future Importing/Cleaning Steps
+
+I need to learn how to do the <, >, == functions using a pipe. It would clean up my code nicely.
+
+I need to learn how to represent each dataframe in a clean, concise manner to show how I selected only some of the columns from the original dataset. 
+
+I could use work on identifying outliers to clean up my data.
+
+I need to figure out how to combine data that is representative of the same major. I would also need to know more about the data for each major to ensure it can be combined. The numbers are different for each Major observation but I do not currently know why. 
+
+#### __Plots and Table Needs__
+
+What types of plots and tables will help you to illustrate the ﬁndings to your research questions?
+
+Scatterplot: Will help visualize the data distributions. I will use a scatterplot to show an example of the majors and their respective median salaries. There are too many majors to include them all on a single scatterplot so only the top 10 from each data set will be plotted.
+
+Histogram: Will help check for normal distribution and create a visual of findings.
+
+Q-Q Plot: Will help check the distribution for potential outliers influencing the results. This would need to be done after the model was built. 
+
+```{r Grad graph, echo=FALSE}
+gradstudentsscatter <- gradstudents2 %>%
+  arrange(desc(Median)) %>% 
+  slice(1:10)
+
+library(ggplot2)
+gradgraph <- ggplot(gradstudentsscatter, aes(Major, Median)) + geom_point() + theme(axis.text.x=element_text(angle=25, hjust=1)) + ggtitle("Top 5 Salaries by Major (Gradstudents)")
+gradgraph
+
+```
+
+```{r Recent Grads, echo = FALSE}
+recentgradsscatter <- recentgrads2 %>%
+  arrange(desc(Median)) %>% 
+  slice(1:10)
+
+library(ggplot2)
+recentgraph <- ggplot(recentgradsscatter, aes(Major, Median)) + geom_point() + theme(axis.text.x=element_text(angle=25, hjust=1)) + ggtitle("Top 5 Salaries by Major (Recent Grads)")
+recentgraph
+
+```
+
+
+```{r All Ages, echo = FALSE}
+allagessscatter <- allages %>%
+  arrange(desc(Median)) %>% 
+  slice(1:10)
+
+library(ggplot2)
+allagesgraph <- ggplot(allagessscatter, aes(Major, Median)) + geom_point() + theme(axis.text.x=element_text(angle=25, hjust=1)) + ggtitle("Top 5 Salaries by Major (All Ages)")
+allagesgraph
+```
+
+
+#### Information That is Not Self-Evident
+
+The ranges of the salaries by major is not self evident. A column could be added to include them. It might be important to know the range because it might affect a student's choice of major.
+
+The total range for all salaries could be shown to provide a better idea of the entire range of the dataset.
+
+It might be worth comparing the total number of students enrolled in a major to the total number of graduates. 
+
+
+#### Different Ways to Look at the Data
+
+The majors associated with the highest salary and lowest unemployment rate might be worth investigating.
+
+It also might be worth further exploring the dataset that compares graduate salaries to non-graduate salaries.
+
+### Summarizing the Data to Answer Key Questions
+
+The top 5 salaries and their majors could be shown using the median value.
+
+The top 5 salaries and their majors could be shown using the P75th value.
+
+The top 5 majors with the lowest unemployment rates could be shown to highlight the majors that offer the best chances of obtaining employment. Their salaries could also be shown
+
+
+### __Questions for future steps__
+
+  I need to gain a better grasp on how to clean the data from the beginning of the analysis. This includes checking for and removing outliers. 
+  
+  I also need a better grasp on how to combine data across various datasets after determining which are important to answer the question. 
+
+  I need to review pulling references from a .bib file as I could not get it to work for this part of the project.
+  
+  I need to incorporate more visuals such as a bar graph comparing the differences in salaries for the same major that are shown across the three datasets.
+  
+### __Future Machine Learning__
+
+I would incorporate the machine learning technique of linear regression to the dataset. This would allow for future predictions about salary as opposed to only the current snapshot. 
+
+I would check the data to ensure it is normally distributed. I would also check homoscedasticity and the independence of errors. Assuming the parameters are met, I would then continue using Pearson's correlation method. I would look at the regression coefficients of each potential predictor of salary available. This would help determine if higher salaries are actually correlated to the major itself and not a third variable. The R2 and Adjusted R2 stats would be looked at to determine how much variation each predictor accounts for. Confidence intervals would also be calculated to help determine whether the model is a good fit. The data would be divided into training and test sets to verify the accuracy of the predictors of salary. This information could then be extrapolated to predict salaries for other majors not included in the dataset.
+
+## __Analysis__
+
+It would be very interesting to see what other predictors lead to an increase in future earning potential. Its very possible that the major of choice does not necessarily influence the earning potential as much as I might think. 
+
+I found the cleaning of the data to be interesting because I didn't end up understanding the original data as much as I thought I did. I believed all the datasets were from the same original data with extra variables included in some of them. As I compared them to each other, though, I discovered that this is likely not the case. The numbers for the same variables did not match up across datasets as one would expect if it was the same data.
+
+
+## __Implications__
+
+The implications of this research could be wide reaching. It could be provided to counselors both at colleges and high schools to assist students in deciding what major they would like to choose. It would offer guidance that may not be readily available at the current time. This would also help students later because they would not be as likely to be surprised by the salaries they receive once in the work force. It could also assist them in determining whether a major is worth taking out large student loan amounts. It would lead to better informed students who would later become better informed new employees.
+
+## __Limitations__
+
+At this time, this analysis is limited in several ways. It is unknown which school the reported students graduated from. There might be a large difference in salaries between states, universities, cities, etc. This data does not take those differences into account.
+
+The data is also relatively old. It would be best to augment the model with data from the last several years to ensure salaries are more accurately represented.
+
+It is also limited to the majors available, however, predictions could be made about other majors if predictors were found to be significant that are shared between majors. It would be best if a larger variety of majors could be incorporated. 
+
+Sample size of graduates could always be increased.
+
+More data could be collected on where (i.e. Industry, Private) graduates from each major are employed. There are potentially large differences in salary based on where a graduate works.
+
+## __Concluding Remarks__
+
+After selecting, cleaning and suggesting a model for the analyses of the three datasets, it became clear that more work needs to be performed to determine what college majors lead to the highest earning potential in the job market. The data chosen was already clean in its original state, but columns had to be selected carefully to combine the three into one intelligible dataset. It would be worth the effort to analyse each dataset on its own to glean more information and assess the influence of predictors other than major on future earning potential. 
+
+Using the linear model in this paper, it would be possible to gain insight into which college majors lead to larger incomes later. This could be a helpful tool for college students to use when deciding which career path they would like to pursue.
+
+#### Bibliography ####
+
+- datasetage{fivethirtyeight2017,
+
+  title={all-ages.csv},
+  
+  author={FiveThirtyEight},
+  
+  series={College Majors and Their Graduates},
+  
+  url={https://www.kaggle.com/datasets/thedevastator/uncovering-insights-to-college-majors-and-their?resource=download&select=all-ages.csv},
+  
+  year={2017},
+  
+  publisher={ABC News}
+}
+
+- datasetgrad{fivethirtyeight2017,
+
+  title={grad-students.csv},
+  
+  author={FiveThirtyEight},
+  
+  series={College Majors and Their Graduates},
+  
+  url={https://www.kaggle.com/datasets/thedevastator/uncovering-insights-to-college-majors-and-their?select=grad-students.csv},
+  
+  year={2017},
+  
+  publisher={ABC News}
+}
+
+
+- datasetrecent{fivethirtyeight2017,
+
+  title={recent-grads.csv},
+  
+  author={FiveThirtyEight},
+  
+  series={College Majors and Their Graduates},
+  
+  url={https://www.kaggle.com/datasets/thedevastator/uncovering-insights-to-college-majors-and-their?select=recent-grads.csv},
+  
+  year={2017},
+  
+  publisher={ABC News}
+}
+
+
+
