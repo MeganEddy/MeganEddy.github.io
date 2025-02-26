@@ -62,6 +62,14 @@
         <a href="#education">Education</a>
         <a href="#contact">Contact</a>
     </nav>
+    <section id="about">
+        <h2>About Me</h2>
+        <p>Hi there! Welcome to my personal portfolio. Thank you for being here.</p>
+        <p>In my previous life, I was a laboratory microbiologist working in a food safety lab. I found myself tiring of the lab but still wanting to employ the scientific method in my work life. What better way to expand my world while still researching than learning data science?</p>
+        <p>I am naturally curious and adventurous. I enjoy traveling to new places and meeting new people. When I'm at home, I enjoy spending time with my animals. An obese, ancient kitty, a ferocious (scaredy-cat) bearded dragon, and the residents of my 55-gallon aquarium.</p>
+        <p>I also enjoy reading and am all about that fantasy and sci-fi. One of my greatest accomplishments to date has been finishing the Wheel of Time series, a years-long endeavor.</p>
+        <p>In the data science realm, my ultimate goal is to work in the sustainability and/or ecology sector.</p>
+    </section>
     <section id="projects">
         <h2>Work/Projects</h2>
         <div id="repo-list">Loading repositories...</div>
@@ -97,8 +105,8 @@
             const repoList = document.getElementById("repo-list");
             repoList.innerHTML = ""; // Clear loading text
 
-            // Filter out the 'MeganEddy.github.io' folder
-            const filteredFiles = files.filter(file => !file.name.includes('MeganEddy.github.io'));
+            // Filter out the 'MeganEddy.github.io' folder and files
+            const filteredFiles = files.filter(file => file.name !== 'MeganEddy.github.io');
 
             // Loop through the filtered files and fetch their README content
             for (const file of filteredFiles) {
@@ -129,3 +137,4 @@
     </script>
 </body>
 </html>
+
