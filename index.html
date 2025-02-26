@@ -9,7 +9,7 @@
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            background-color: lavender;
+            background-color: lavender; /* Set the background color for the page */
             color: black;
         }
         header {
@@ -37,7 +37,7 @@
             margin-top: 10px;
         }
         .repo-item {
-            background-color: lavender; /* Set to match the page background */
+            background-color: lavender; /* Match background to the rest of the page */
             padding: 10px;
             margin-bottom: 15px;
             border-radius: 5px;
@@ -97,7 +97,7 @@
         <p>LinkedIn: <a href="https://www.linkedin.com/in/megan-eddy-82553253/" target="_blank">Megan Eddy</a></p>
     </section>
     <script>
-        // Function to fetch and display repos (without README preview)
+        // Function to fetch and display repos (without README and index.html)
         async function loadRepos() {
             const username = "MeganEddy";
             const repoName = "MeganEddy.github.io";  // Specifically for this repo
@@ -107,8 +107,8 @@
             const repoList = document.getElementById("repo-list");
             repoList.innerHTML = ""; // Clear loading text
 
-            // Filter out the 'MeganEddy.github.io' folder and files
-            const filteredFiles = files.filter(file => file.name !== 'MeganEddy.github.io');
+            // Filter out 'README.md' and 'index.html' and other unnecessary files
+            const filteredFiles = files.filter(file => file.name !== 'README.md' && file.name !== 'index.html' && file.type === 'dir');
 
             // Loop through the filtered files and display links
             for (const file of filteredFiles) {
@@ -128,3 +128,4 @@
     </script>
 </body>
 </html>
+
