@@ -37,18 +37,20 @@
             margin-top: 10px;
         }
         .repo-item {
-            background-color: #f9f9f9;
+            background-color: lavender; /* Set to match the page background */
             padding: 10px;
             margin-bottom: 15px;
             border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         .repo-name {
             font-weight: bold;
             font-size: 1.2rem;
+            color: #333;
+            text-decoration: none;
         }
-        .readme-preview {
-            font-style: italic;
-            color: #555;
+        .repo-name:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -95,7 +97,7 @@
         <p>LinkedIn: <a href="https://www.linkedin.com/in/megan-eddy-82553253/" target="_blank">Megan Eddy</a></p>
     </section>
     <script>
-        // Function to fetch and display repos and README preview
+        // Function to fetch and display repos (without README preview)
         async function loadRepos() {
             const username = "MeganEddy";
             const repoName = "MeganEddy.github.io";  // Specifically for this repo
@@ -108,7 +110,7 @@
             // Filter out the 'MeganEddy.github.io' folder and files
             const filteredFiles = files.filter(file => file.name !== 'MeganEddy.github.io');
 
-            // Loop through the filtered files and fetch their README content
+            // Loop through the filtered files and display links
             for (const file of filteredFiles) {
                 const fileElement = document.createElement("div");
                 fileElement.classList.add("repo-item");
@@ -116,18 +118,7 @@
                 const fileName = file.name;
                 const fileLink = `<a href="https://github.com/${username}/${repoName}/tree/main/${fileName}" target="_blank" class="repo-name">${fileName}</a>`;
 
-                // Check if the file is a README.md and fetch its content if so
-                if (fileName.toLowerCase().includes('readme.md')) {
-                    const readmeResponse = await fetch(file.download_url);
-                    const readmeContent = await readmeResponse.text();
-                    const readmePreview = readmeContent.split('\n').slice(0, 5).join('\n'); // First 5 lines of README
-                    const readmePreviewElement = `<p class="readme-preview">${readmePreview}</p>`;
-
-                    fileElement.innerHTML = `${fileLink} ${readmePreviewElement}`;
-                } else {
-                    fileElement.innerHTML = fileLink;
-                }
-
+                fileElement.innerHTML = fileLink;
                 repoList.appendChild(fileElement);
             }
         }
@@ -137,4 +128,3 @@
     </script>
 </body>
 </html>
-
