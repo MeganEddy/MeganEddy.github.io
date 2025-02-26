@@ -11,10 +11,10 @@
         nav a { margin: 0 15px; text-decoration: none; color: #333; font-weight: bold; }
         section { padding: 20px; max-width: 800px; margin: auto; }
         .repo-list { margin-top: 10px; }
-        .repo-item { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 2px 2px 5px gray; }
+        .repo-item { margin: 10px 0; padding: 10px 0; border-bottom: 1px solid #999; } /* No background, just subtle separators */
         .repo-item h3 { margin: 0; }
-        .repo-item p { margin: 5px 0; color: #555; }
-        .repo-item a { color: #0073e6; text-decoration: none; }
+        .repo-item p { margin: 5px 0; color: #333; }
+        .repo-item a { color: #0073e6; text-decoration: none; font-weight: bold; }
         .repo-item a:hover { text-decoration: underline; }
     </style>
 </head>
@@ -31,10 +31,7 @@
     <section id="about">
         <h2>About Me</h2>
         <p>Hi there! Welcome to my personal portfolio. Thank you for being here.</p>
-        <p>In my previous life, I was a laboratory microbiologist working in a food safety lab. I found myself tiring of the lab but still wanting to employ the scientific method in my work life. What better way to expand my world while still researching than learning data science?</p>
-        <p>I am naturally curious and adventurous. I enjoy traveling to new places and meeting new people. When I'm at home, I enjoy spending time with my animals. An obese, ancient kitty, a ferocious (scaredy-cat) bearded dragon, and the residents of my 55-gallon aquarium.</p>
-        <p>I also enjoy reading and am all about that fantasy and sci-fi. One of my greatest accomplishments to date has been finishing the Wheel of Time series, a years-long endeavor.</p>
-        <p>In the data science realm, my ultimate goal is to work in the sustainability and/or ecology sector.</p>
+        <p>In my previous life, I was a laboratory microbiologist working in a food safety lab...</p>
     </section>
     <section id="projects">
         <h2>Work/Projects</h2>
@@ -42,15 +39,8 @@
     </section>
     <section id="education">
         <h2>Education</h2>
-        <p><strong>Bellevue University</strong><br>
-        Master of Science - MS, Data Science<br>
-        Aug 2022 - Mar 2025</p>
-        <p><strong>The University of Kansas</strong><br>
-        Bachelor of Arts - BA, Spanish Language and Literature<br>
-        Aug 2007 - Dec 2013</p>
-        <p><strong>The University of Kansas</strong><br>
-        Bachelor of Science - BS, Organismal Biology<br>
-        Aug 2007 - May 2012</p>
+        <p><strong>Bellevue University</strong> - MS, Data Science</p>
+        <p><strong>The University of Kansas</strong> - BA, Spanish; BS, Organismal Biology</p>
     </section>
     <section id="contact">
         <h2>Contact</h2>
@@ -68,7 +58,6 @@
             // Exclude 'MeganEddy.github.io'
             const filteredRepos = repos.filter(repo => repo.name !== "MeganEddy.github.io");
 
-            // Fetch README for each repo and display it
             const repoList = document.getElementById("repo-list");
             repoList.innerHTML = "";
 
@@ -80,14 +69,12 @@
 
                 if (readmeResponse.ok) {
                     const readmeData = await readmeResponse.json();
-                    const decodedContent = atob(readmeData.content); // Decode base64 content
-                    
-                    // Extract first 3 lines for a short preview
+                    const decodedContent = atob(readmeData.content); 
                     const readmeLines = decodedContent.split("\n").slice(0, 3).join(" ");
                     readmeText = readmeLines.length > 0 ? readmeLines : "No description available.";
                 }
 
-                // Create and append project entry
+                // Append project entry without a white box
                 const projectHTML = `
                     <div class="repo-item">
                         <h3><a href="${repo.html_url}" target="_blank">${repo.name}</a></h3>
